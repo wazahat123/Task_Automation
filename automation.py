@@ -9,17 +9,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.chrome import ChromeDriverManager  # ✅ Added
 
-# --- Get Excel File Path from Command Line Arguments ---
+# Get Excel File Path from Command Line Arguments
 excel_file = sys.argv[1]
-
-# ✅ Initial debug logs
-print("✅ Automation script started")
-print("Excel file received:", excel_file)
-print("Current working directory:", os.getcwd())
-print("Excel file exists?", os.path.exists(excel_file))
-
 if not os.path.exists(excel_file):
     raise FileNotFoundError(f"Excel file not found: {excel_file}")
 
@@ -27,16 +19,19 @@ df = pd.read_excel(excel_file)
 if df.empty:
     raise ValueError(f"The Excel file '{excel_file}' is empty or could not be loaded properly.")
 
-# --- Setup Chrome Driver (Dynamic for Render + Local) ---
-options = webdriver.ChromeOptions()
-options.add_argument("--headless")  # ✅ Headless mode for Render
-options.add_argument("--no-sandbox")  # ✅ Prevent sandbox issues
-options.add_argument("--disable-dev-shm-usage")  # ✅ Prevent shared memory crashes
-options.add_argument("--disable-blink-features=AutomationControlled")
-options.add_argument("--window-size=1920,1080")  # ✅ Ensure full-size rendering
+# Setup Chrome Driver for Headless Mode
+chrome_driver_path = r"/path/to/chromedriver"  # Update this path accordingly
+if not os.path.exists(chrome_driver_path):
+    raise FileNotFoundError(f"ChromeDriver not found at {chrome_driver_path}")
 
-# 🚀 Use webdriver-manager to handle ChromeDriver automatically
-service = Service(ChromeDriverManager().install())
+service = Service(chrome_driver_path)
+
+options = webdriver.ChromeOptions()
+options.add_argument("--headless")  # Run in headless mode
+options.add_argument("--disable-gpu")  # Disable GPU (for headless mode)
+options.add_argument("--no-sandbox")  # Disable sandbox for better stability
+options.add_argument("--disable-blink-features=AutomationControlled")  # To prevent detection
+options.add_argument("--window-size=1920x1080")  # Set window size for headless mode
 
 driver = webdriver.Chrome(service=service, options=options)
 wait = WebDriverWait(driver, 30)
@@ -58,7 +53,7 @@ time.sleep(2)
 # --- Prepare for Logging Failed Tasks ---
 failed_tasks_log = "failed_tasks.txt"
 if os.path.exists(failed_tasks_log):
-    os.remove(failed_tasks_log)  # Clean old log if exists
+    os.remove(failed_tasks_log)  # Remove old log if exists
 
 # --- Process Each Task ---
 df.columns = df.columns.str.strip()
@@ -77,18 +72,21 @@ for index, row in filtered_df.iterrows():
     try:
         # Title
         title_input = wait.until(EC.presence_of_element_located((By.XPATH, "//*[@id='app']/div[2]/div/form/div[4]/div/div[1]/div/div[2]/div/div[2]/input")))
+
         driver.execute_script("arguments[0].scrollIntoView(true);", title_input)
         title_input.clear()
         title_input.send_keys(task_name)
 
         # Description
         description_input = wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="app"]/div[2]/div/form/div[4]/div/div[1]/div/div[3]/div/div[2]/textarea')))
+
         driver.execute_script("arguments[0].scrollIntoView(true);", description_input)
         description_input.clear()
         description_input.send_keys(description_value)
 
         # Content Category — "Colleges"
         category_dropdown = wait.until(EC.element_to_be_clickable((By.XPATH, "//*[@id='syuSelect-:r7:']/div/div[1]/div")))
+
         driver.execute_script("arguments[0].scrollIntoView(true);", category_dropdown)
         category_dropdown.click()
         wait.until(EC.element_to_be_clickable((By.XPATH, "//div[contains(text(), 'Colleges')]"))).click()
@@ -143,10 +141,7 @@ for index, row in filtered_df.iterrows():
 
         # Submit
         submit_button = wait.until(EC.presence_of_element_located((By.XPATH, "//*[@id='app']/div[2]/div/form/div[3]/div[2]/button")))
-        driver.execute_script("""
-            arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});
-            window.scrollBy(0, -150);
-        """, submit_button)
+        driver.execute_script("""arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'}); window.scrollBy(0, -150);""", submit_button)
         time.sleep(1)
         submit_button.click()
 
