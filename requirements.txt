@@ -1,0 +1,7 @@
+Flask
+gunicorn
+pandas
+selenium
+openpyxl
+webdriver-manager
+python-dotenv
