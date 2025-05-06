@@ -27,17 +27,13 @@ def upload():
     file.save(filepath)
 
     try:
-        # Running the automation script and passing the uploaded file path as argument
-        result = subprocess.run(
-            ["python", "automation.py", filepath], check=True, capture_output=True, text=True
-        )
+        # Run the automation with Python3
+        subprocess.run(["python3", "automation.py", filepath], check=True)
         flash("✅ Task automation completed successfully!")
-        print(result.stdout)  # Print output of automation script to console (for debugging)
     except subprocess.CalledProcessError as e:
-        flash(f"❌ Automation failed: {e.stderr}")  # Provide the error message from the subprocess
-        print(e.stderr)  # Print error output of automation script to console (for debugging)
-
+        flash(f"❌ Automation failed: {e}")
+    
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0", port=5000)
