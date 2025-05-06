@@ -23,20 +23,20 @@ def upload():
         flash('No selected file')
         return redirect(url_for('index'))
 
-    # ✅ Get absolute path
-    filepath = os.path.abspath(os.path.join(UPLOAD_FOLDER, file.filename))
+    filepath = os.path.join(UPLOAD_FOLDER, file.filename)
     file.save(filepath)
 
-    # ✅ Debug logging
-    print("File saved to:", filepath)
-    print("File exists?", os.path.exists(filepath))
-
     try:
-        subprocess.run(["python", "automation.py", filepath], check=True)
+        # Running the automation script and passing the uploaded file path as argument
+        result = subprocess.run(
+            ["python", "automation.py", filepath], check=True, capture_output=True, text=True
+        )
         flash("✅ Task automation completed successfully!")
+        print(result.stdout)  # Print output of automation script to console (for debugging)
     except subprocess.CalledProcessError as e:
-        flash(f"❌ Automation failed: {e}")
-    
+        flash(f"❌ Automation failed: {e.stderr}")  # Provide the error message from the subprocess
+        print(e.stderr)  # Print error output of automation script to console (for debugging)
+
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
