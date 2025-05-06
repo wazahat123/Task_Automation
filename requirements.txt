@@ -7,3 +7,4 @@ webdriver-manager
 python-dotenv
 undetected-chromedriver
 
+python-dateutil
