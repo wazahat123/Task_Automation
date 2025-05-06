@@ -1,0 +1,17 @@
+# Ignore virtual environment folder
+venv/
+
+# Ignore Python cache files
+__pycache__/
+
+# Ignore environment variable file
+.env
+
+# Ignore log files
+*.log
+
+# Ignore uploads folder if not required in version control
+uploads/
+
+# Ignore Docker image files
+*.tar
