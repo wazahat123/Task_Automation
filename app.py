@@ -23,8 +23,13 @@ def upload():
         flash('No selected file')
         return redirect(url_for('index'))
 
-    filepath = os.path.join(UPLOAD_FOLDER, file.filename)
+    # ✅ Get absolute path
+    filepath = os.path.abspath(os.path.join(UPLOAD_FOLDER, file.filename))
     file.save(filepath)
+
+    # ✅ Debug logging
+    print("File saved to:", filepath)
+    print("File exists?", os.path.exists(filepath))
 
     try:
         subprocess.run(["python", "automation.py", filepath], check=True)
